@@ -1,0 +1,47 @@
+WITH yearly_visits AS (
+  SELECT
+    ParkName,
+    Year,
+    SUM(CAST(RecreationVisits AS BIGINT)) AS TotalYearlyVisits
+  FROM
+    park_visits_by_year
+  GROUP BY
+    ParkName, Year
+),
+yearly_visits_with_lag AS (
+  SELECT
+    ParkName,
+    Year,
+    TotalYearlyVisits,
+    LAG(TotalYearlyVisits) OVER (PARTITION BY ParkName ORDER BY Year) AS PreviousYearVisits
+  FROM
+    yearly_visits
+),
+visitation_trends AS (
+  SELECT
+    ParkName,
+    Year,
+    TotalYearlyVisits,
+    PreviousYearVisits,
+    CASE
+      WHEN PreviousYearVisits IS NULL THEN NULL
+      ELSE TotalYearlyVisits - PreviousYearVisits
+    END AS YearlyChange
+  FROM
+    yearly_visits_with_lag
+)
+SELECT
+  ParkName,
+  Year,
+  TotalYearlyVisits,
+  YearlyChange,
+  CASE
+    WHEN YearlyChange IS NULL THEN 'No Data'
+    WHEN YearlyChange > 0 THEN 'Increasing'
+    WHEN YearlyChange < 0 THEN 'Decreasing'
+    ELSE 'No Change'
+  END AS Trend
+FROM
+  visitation_trends
+ORDER BY
+  ParkName, Year;
