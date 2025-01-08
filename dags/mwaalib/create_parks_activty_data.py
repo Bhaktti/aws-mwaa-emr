@@ -8,7 +8,7 @@ response = requests.get(
     "accept": "application/json"
   },
   params={
-    "api_key": "7fRCZjCFt0SLvkSwkYQwhPcqKGsdunZXaho0R7fX",
+    "api_key": "Api key",
     # "page": 1,
     # "limit": 1
   }
